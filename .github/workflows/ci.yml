@@ -31,4 +31,5 @@ jobs:
 
     - name: Run tests with coverage
       run: |
+        export PYTHONPATH=$(pwd)
         pytest --cov=etl --cov-report=term-missing tests/
