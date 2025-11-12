@@ -2,36 +2,33 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main, laba_1 ]
   pull_request:
-    branches: [main]
+    branches: [ main, laba_1 ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: etl_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres" 
-          --health-interval 5s 
-          --health-timeout 5s 
-          --health-retries 5
-
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest -v
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.13
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+
+    - name: Build Docker image
+      run: |
+        docker build -t my_etl_app .
+
+    - name: Run tests with coverage
+      run: |
+        pytest --cov=etl --cov-report=term-missing tests/

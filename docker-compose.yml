@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: etl_postgres_2
+    environment:
+      POSTGRES_USER: dds_user
+      POSTGRES_PASSWORD: dds_pass
+      POSTGRES_DB: dds_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dds_user"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+
+  etl_app:
+    build: .
+    container_name: etl_app_2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: dds_user
+      DB_PASSWORD: dds_pass
+      DB_NAME: dds_db
+    command: ["python", "main.py"]
+
+volumes:
+  pgdata:
