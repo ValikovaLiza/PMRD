@@ -1,2 +1,4 @@
-psycopg2-binary 
+psycopg2-binary
 faker
+pymysql
+cryptography

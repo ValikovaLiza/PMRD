@@ -16,11 +16,31 @@ services:
       retries: 5
       start_period: 5s
 
+  mysql:
+    image: mysql:8
+    container_name: etl_mysql_2
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dm_db
+      MYSQL_USER: dm_user
+      MYSQL_PASSWORD: dm_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "dm_user", "-pdm_pass"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+
   etl_app:
     build: .
     container_name: etl_app_2
     depends_on:
       postgres:
+        condition: service_healthy
+      mysql:
         condition: service_healthy
     environment:
       DB_HOST: postgres
@@ -28,7 +48,13 @@ services:
       DB_USER: dds_user
       DB_PASSWORD: dds_pass
       DB_NAME: dds_db
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: dm_user
+      MYSQL_PASSWORD: dm_pass
+      MYSQL_DB: dm_db
     command: ["python", "main.py"]
 
 volumes:
   pgdata:
+  mysqldata:
