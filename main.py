@@ -89,6 +89,12 @@ def main():
     execute_sql_file(conn_params, "sql/fn_dm_data_load.sql")
     execute_sql_file(conn_params, "sql/create_dm_view.sql")
 
+    print('---------------ЛАБА 3--------------------')
+    execute_sql_file(conn_params, "sql/create_dq_tables.sql")
+    execute_sql_file(conn_params, "sql/fn_dq_checks_load.sql")
+    execute_sql_file(conn_params, "sql/run_dq_checks.sql")
+    
+    print('---------------ЛАБА 2--------------------')
     fill_dm_table(start_date, end_date)
 
     wait_for_mysql(mysql_conn_params)
@@ -99,6 +105,7 @@ def main():
     execute_procedure_mysql_sql_file(mysql_conn_params, "sql/fn_dm_data_stg_to_dm_load.sql")
 
     load_dm_to_mysql(start_date, end_date)
+
 
 if __name__ == "__main__":
     main()
