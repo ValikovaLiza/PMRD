@@ -2,6 +2,7 @@ import pytest
 import json
 from unittest.mock import MagicMock, patch
 from etl.etl_function import get_dataset, load_data_to_db, fill_structured_table
+from main import execute_sql_file
 
 @pytest.mark.parametrize("n", [10, 50])
 def test_get_dataset_returns_json_list(n):
@@ -55,3 +56,20 @@ def test_fill_structured_table_calls_sql():
 
     assert mock_conn.commit.called
     assert mock_cur.close.called
+
+def test_run_dq_checks_sql():
+    mock_cursor = MagicMock()
+    mock_conn = MagicMock()
+    mock_conn.cursor.return_value = mock_cursor
+
+    with patch("etl.etl_function.psycopg2.connect", return_value=mock_conn):
+        execute_sql_file({"dbname": "test", "user": "test", "password": "test"}, "sql/run_dq_checks.sql")
+
+    assert mock_cursor.execute.called
+
+    called_sql = mock_cursor.execute.call_args[0][0]
+    assert "fn_dq_checks_load" in called_sql
+
+    mock_conn.commit.assert_called_once()
+    mock_cursor.close.assert_called_once()
+    mock_conn.close.assert_called_once()

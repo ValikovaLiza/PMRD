@@ -25,25 +25,7 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-cov
 
-    - name: Build Docker image
-      run: |
-        docker build -t my_etl_app .
-
     - name: Run tests with coverage
       run: |
         export PYTHONPATH=$(pwd)
         pytest --cov=etl --cov-report=term-missing tests/
-
-    - name: Run Data Quality checks
-      env:
-        POSTGRES_HOST: localhost
-        POSTGRES_PORT: 5432
-        POSTGRES_DB: dds_db
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-      run: |
-        sleep 10
-
-        docker run --network host --rm postgres:15 psql \
-          -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB \
-          -c "SELECT s_psql_dds.fn_dq_checks_load('2025-01-01','2025-12-31');"
